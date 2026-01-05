@@ -88,6 +88,26 @@ class ArabicStrings {
   // العملة - Currency
   static const String sar = 'ريال';
   static const String sarSymbol = 'ر.س.';
+  static const String saudiRiyal = 'ريال سعودي';
+
+  // الإلتزامات المالية - Financial Commitments
+  static const String financialCommitments = 'الإلتزامات المالية';
+  static const String monthlyCommitments = 'الإلتزامات الشهرية';
+  static const String disabledCommitments = 'الإلتزامات المعطلة';
+  static const String totalCommitments = 'مجموع الإلتزامات';
+  static const String monthly = 'شهريًا';
+  static const String newCommitment = 'التزام مالي جديد';
+  static const String commitmentDetails = 'الإلتزام المالي';
+  static const String commitmentName = 'الإسم';
+  static const String enterName = 'ادخل الاسم';
+  static const String commitmentType = 'نوع الإلتزام المالي';
+  static const String commitmentCycle = 'دورة الإلتزام المالي';
+  static const String commitmentValue = 'قيمة الإلتزام المالي';
+  static const String save = 'حفظ';
+  static const String delete = 'حذف';
+  static const String edit = 'تعديل';
+  static const String enable = 'تفعيل';
+  static const String disable = 'تعطيل';
 }
 
 /// مفاتيح التخزين المحلي
@@ -101,4 +121,5 @@ class StorageKeys {
   static const String lastAnnualIncrease = 'last_annual_increase';
   static const String lastBonusSalaries = 'last_bonus_salaries';
   static const String inputMode = 'input_mode';
+  static const String commitments = 'commitments';
 }

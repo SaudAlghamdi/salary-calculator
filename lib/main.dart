@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme.dart';
 import 'domain/repositories/settings_repository.dart';
 import 'domain/services/gosi_calculator_service.dart';
+import 'presentation/providers/commitments_provider.dart';
 import 'presentation/providers/salary_provider.dart';
 import 'presentation/screens/home_screen.dart';
 
@@ -36,6 +37,7 @@ void main() async {
   // تشغيل التطبيق
   runApp(
     SalaryCalculatorApp(
+      prefs: prefs,
       settingsRepository: settingsRepository,
       calculatorService: calculatorService,
     ),
@@ -48,8 +50,11 @@ void main() async {
 /// التطبيق الرئيسي الذي يهيئ:
 /// - الثيم الداكن
 /// - اللغة العربية
-/// - مزود الحالة (Provider)
+/// - مزودات الحالة (Providers)
 class SalaryCalculatorApp extends StatelessWidget {
+  /// التخزين المحلي
+  final SharedPreferences prefs;
+
   /// مستودع الإعدادات
   final ISettingsRepository settingsRepository;
 
@@ -59,17 +64,27 @@ class SalaryCalculatorApp extends StatelessWidget {
   /// المُنشئ
   const SalaryCalculatorApp({
     super.key,
+    required this.prefs,
     required this.settingsRepository,
     required this.calculatorService,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => SalaryProvider(
-        calculatorService: calculatorService,
-        settingsRepository: settingsRepository,
-      )..loadSavedSettings(),
+    return MultiProvider(
+      providers: [
+        // مزود حالة الراتب
+        ChangeNotifierProvider(
+          create: (_) => SalaryProvider(
+            calculatorService: calculatorService,
+            settingsRepository: settingsRepository,
+          )..loadSavedSettings(),
+        ),
+        // مزود حالة الإلتزامات
+        ChangeNotifierProvider(
+          create: (_) => CommitmentsProvider(prefs),
+        ),
+      ],
       child: MaterialApp(
         // عنوان التطبيق
         title: 'حاسبة الراتب',

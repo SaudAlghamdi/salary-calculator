@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/constants.dart';
 import '../../core/theme.dart';
+import '../../data/models/commitment.dart';
+import '../providers/commitments_provider.dart';
+import '../widgets/add_commitment_sheet.dart';
+import '../widgets/commitment_row.dart';
 
-/// شاشة الإلتزامات - Commitments Screen
+/// شاشة الإلتزامات المالية - Commitments Screen
 ///
 /// شاشة لعرض وإدارة الإلتزامات المالية مثل:
-/// - القروض
-/// - الأقساط
-/// - الفواتير الشهرية
-
+/// - الفواتير والخدمات
+/// - القروض والأقساط
+/// - الإيجارات
 
 /// شاشة الإلتزامات
 /// Commitments Screen
@@ -20,220 +24,210 @@ class CommitmentsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(ArabicStrings.commitments),
+        title: const Text(ArabicStrings.financialCommitments),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () => _showAddCommitmentSheet(context),
+        ),
+        actions: [
+          Consumer<CommitmentsProvider>(
+            builder: (context, provider, _) {
+              return IconButton(
+                icon: Icon(
+                  provider.sortAscending
+                      ? Icons.swap_vert
+                      : Icons.swap_vert,
+                ),
+                onPressed: provider.toggleSort,
+              );
+            },
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // عنوان القسم
-                Text(
-                  'الإلتزامات المالية',
-                  style: AppTextStyles.sectionTitle,
-                ),
-                const SizedBox(height: 16),
+      body: Consumer<CommitmentsProvider>(
+        builder: (context, provider, _) {
+          final activeCommitments = provider.activeCommitments;
+          final disabledCommitments = provider.disabledCommitments;
+          final hasCommitments = activeCommitments.isNotEmpty ||
+              disabledCommitments.isNotEmpty;
 
-                // بطاقة توضيحية
-                _CommitmentInfoCard(),
+          if (!hasCommitments) {
+            return _buildEmptyState(context);
+          }
 
-                const SizedBox(height: 24),
-
-                // أنواع الإلتزامات
-                Text(
-                  'أنواع الإلتزامات',
-                  style: AppTextStyles.sectionTitle,
-                ),
-                const SizedBox(height: 16),
-
-                _CommitmentTypeCard(
-                  title: 'القروض',
-                  description: 'القروض الشخصية والعقارية وقروض السيارات',
-                  icon: Icons.account_balance_wallet,
-                ),
-
-                const SizedBox(height: 12),
-
-                _CommitmentTypeCard(
-                  title: 'الأقساط',
-                  description: 'أقساط الأجهزة والإلكترونيات والمشتريات',
-                  icon: Icons.credit_card,
-                ),
-
-                const SizedBox(height: 12),
-
-                _CommitmentTypeCard(
-                  title: 'الفواتير الشهرية',
-                  description: 'الكهرباء والماء والإنترنت والهاتف',
-                  icon: Icons.receipt_long,
-                ),
-
-                const SizedBox(height: 12),
-
-                _CommitmentTypeCard(
-                  title: 'الإيجار',
-                  description: 'إيجار السكن الشهري أو السنوي',
-                  icon: Icons.home,
-                ),
-
-                const SizedBox(height: 24),
-
-                // نصيحة
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardBackground,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.textGreen.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
+          return Column(
+            children: [
+              // قائمة الإلتزامات
+              Expanded(
+                child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            'نصيحة مالية',
-                            style: AppTextStyles.label.copyWith(
-                              color: AppColors.textGreen,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.lightbulb_outline,
-                            color: AppColors.textGreen,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'يُنصح بعدم تجاوز إجمالي الإلتزامات الشهرية 40% من صافي الراتب لضمان الاستقرار المالي',
-                        style: AppTextStyles.secondaryLabel,
-                        textAlign: TextAlign.right,
-                      ),
+                      // الإلتزامات الشهرية المفعّلة
+                      if (activeCommitments.isNotEmpty) ...[
+                        _buildSectionHeader(ArabicStrings.monthlyCommitments),
+                        _buildCommitmentsList(
+                          context,
+                          activeCommitments,
+                          provider,
+                        ),
+                      ],
+
+                      // الإلتزامات المعطّلة
+                      if (disabledCommitments.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        _buildSectionHeader(ArabicStrings.disabledCommitments),
+                        _buildCommitmentsList(
+                          context,
+                          disabledCommitments,
+                          provider,
+                          isDisabled: true,
+                        ),
+                      ],
                     ],
                   ),
                 ),
-              ],
+              ),
+
+              // شريط المجموع
+              if (activeCommitments.isNotEmpty)
+                CommitmentsTotalBar(
+                  totalMonthly: provider.totalMonthlyCommitments,
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 80,
+              color: AppColors.textSecondary.withOpacity(0.5),
             ),
-          ),
+            const SizedBox(height: 24),
+            const Text(
+              'لا توجد إلتزامات مالية',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'اضغط على + لإضافة إلتزام جديد',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => _showAddCommitmentSheet(context),
+              icon: const Icon(Icons.add),
+              label: const Text('إضافة إلتزام'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.inputBackground,
+                foregroundColor: AppColors.textGreen,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-/// بطاقة معلومات الإلتزامات
-/// Commitment Info Card
-class _CommitmentInfoCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Text(
+        title,
+        style: AppTextStyles.sectionTitle,
+      ),
+    );
+  }
+
+  Widget _buildCommitmentsList(
+    BuildContext context,
+    List<Commitment> commitments,
+    CommitmentsProvider provider, {
+    bool isDisabled = false,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                'إدارة الإلتزامات',
-                style: AppTextStyles.label.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.pie_chart_outline,
-                color: AppColors.textPrimary,
-                size: 24,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'تتبع إلتزاماتك المالية الشهرية لمعرفة المبلغ المتبقي من راتبك بعد سداد جميع الإلتزامات',
-            style: AppTextStyles.secondaryLabel,
-            textAlign: TextAlign.right,
-          ),
-        ],
+        children: List.generate(commitments.length, (index) {
+          final commitment = commitments[index];
+          return CommitmentRow(
+            commitment: commitment,
+            showBorder: index < commitments.length - 1,
+            onTap: () => _showEditCommitmentSheet(context, commitment),
+            onToggle: () => provider.toggleCommitmentStatus(commitment.id),
+            onDelete: () => provider.deleteCommitment(commitment.id),
+          );
+        }),
       ),
     );
   }
-}
 
-/// بطاقة نوع الإلتزام
-/// Commitment Type Card
-class _CommitmentTypeCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const _CommitmentTypeCard({
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // المحتوى
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  title,
-                  style: AppTextStyles.label.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: AppTextStyles.secondaryLabel,
-                  textAlign: TextAlign.right,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          // الأيقونة
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.inputBackground,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              color: AppColors.textPrimary,
-              size: 24,
-            ),
-          ),
-        ],
-      ),
+  void _showAddCommitmentSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const AddCommitmentSheet(),
     );
+
+    if (result != null && context.mounted) {
+      final provider = context.read<CommitmentsProvider>();
+      await provider.addCommitment(
+        name: result['name'] as String,
+        type: result['type'] as CommitmentType,
+        cycle: result['cycle'] as CommitmentCycle,
+        amount: result['amount'] as double,
+      );
+    }
+  }
+
+  void _showEditCommitmentSheet(
+    BuildContext context,
+    Commitment commitment,
+  ) async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddCommitmentSheet(editCommitment: commitment),
+    );
+
+    if (result != null && context.mounted) {
+      final provider = context.read<CommitmentsProvider>();
+      await provider.updateCommitment(
+        commitment.copyWith(
+          name: result['name'] as String,
+          type: result['type'] as CommitmentType,
+          cycle: result['cycle'] as CommitmentCycle,
+          amount: result['amount'] as double,
+        ),
+      );
+    }
   }
 }

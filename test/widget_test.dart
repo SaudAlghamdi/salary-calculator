@@ -25,6 +25,7 @@ void main() {
     // بناء التطبيق
     await tester.pumpWidget(
       SalaryCalculatorApp(
+        prefs: prefs,
         settingsRepository: settingsRepository,
         calculatorService: calculatorService,
       ),
