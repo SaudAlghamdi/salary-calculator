@@ -108,6 +108,12 @@ class ArabicStrings {
   static const String edit = 'تعديل';
   static const String enable = 'تفعيل';
   static const String disable = 'تعطيل';
+
+  // خيارات الترتيب - Sort Options
+  static const String sortNewest = 'الأحدث';
+  static const String sortOldest = 'الأقدم';
+  static const String sortPriceHighest = 'السعر (الأعلى)';
+  static const String sortPriceLowest = 'السعر (الأدنى)';
 }
 
 /// مفاتيح التخزين المحلي

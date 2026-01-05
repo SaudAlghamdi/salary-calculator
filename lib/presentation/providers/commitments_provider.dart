@@ -6,6 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../data/models/commitment.dart';
 
+/// أنواع الترتيب - Sort Types
+enum CommitmentSortType {
+  newest,     // الأحدث
+  oldest,     // الأقدم
+  priceHighest, // السعر (الأعلى)
+  priceLowest,  // السعر (الأدنى)
+}
+
 /// مزود حالة الإلتزامات المالية - Commitments State Provider
 ///
 /// يدير هذا المزود:
@@ -21,6 +29,9 @@ class CommitmentsProvider extends ChangeNotifier {
 
   /// قائمة الإلتزامات
   List<Commitment> _commitments = [];
+
+  /// نوع الترتيب الحالي
+  CommitmentSortType _sortType = CommitmentSortType.newest;
 
   /// ترتيب القائمة (تصاعدي/تنازلي)
   bool _sortAscending = true;
@@ -52,6 +63,9 @@ class CommitmentsProvider extends ChangeNotifier {
 
   /// ترتيب القائمة
   bool get sortAscending => _sortAscending;
+
+  /// نوع الترتيب الحالي
+  CommitmentSortType get sortType => _sortType;
 
   // =====================
   // تحميل وحفظ البيانات
@@ -145,11 +159,26 @@ class CommitmentsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// تغيير نوع الترتيب
+  void setSortType(CommitmentSortType type) {
+    _sortType = type;
+    _sortCommitments();
+    notifyListeners();
+  }
+
   /// ترتيب الإلتزامات
   void _sortCommitments() {
     _commitments.sort((a, b) {
-      final comparison = a.monthlyAmount.compareTo(b.monthlyAmount);
-      return _sortAscending ? comparison : -comparison;
+      switch (_sortType) {
+        case CommitmentSortType.newest:
+          return b.createdAt.compareTo(a.createdAt);
+        case CommitmentSortType.oldest:
+          return a.createdAt.compareTo(b.createdAt);
+        case CommitmentSortType.priceHighest:
+          return b.monthlyAmount.compareTo(a.monthlyAmount);
+        case CommitmentSortType.priceLowest:
+          return a.monthlyAmount.compareTo(b.monthlyAmount);
+      }
     });
   }
 

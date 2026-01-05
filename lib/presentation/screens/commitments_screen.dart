@@ -33,13 +33,36 @@ class CommitmentsScreen extends StatelessWidget {
         actions: [
           Consumer<CommitmentsProvider>(
             builder: (context, provider, _) {
-              return IconButton(
-                icon: Icon(
-                  provider.sortAscending
-                      ? Icons.swap_vert
-                      : Icons.swap_vert,
+              return PopupMenuButton<CommitmentSortType>(
+                icon: const Icon(Icons.swap_vert),
+                color: AppColors.cardBackground,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                onPressed: provider.toggleSort,
+                offset: const Offset(0, 50),
+                onSelected: provider.setSortType,
+                itemBuilder: (context) => [
+                  _buildSortMenuItem(
+                    ArabicStrings.sortNewest,
+                    CommitmentSortType.newest,
+                    provider.sortType,
+                  ),
+                  _buildSortMenuItem(
+                    ArabicStrings.sortOldest,
+                    CommitmentSortType.oldest,
+                    provider.sortType,
+                  ),
+                  _buildSortMenuItem(
+                    ArabicStrings.sortPriceHighest,
+                    CommitmentSortType.priceHighest,
+                    provider.sortType,
+                  ),
+                  _buildSortMenuItem(
+                    ArabicStrings.sortPriceLowest,
+                    CommitmentSortType.priceLowest,
+                    provider.sortType,
+                  ),
+                ],
               );
             },
           ),
@@ -180,6 +203,7 @@ class CommitmentsScreen extends StatelessWidget {
             commitment: commitment,
             showBorder: index < commitments.length - 1,
             onTap: () => _showEditCommitmentSheet(context, commitment),
+            onEdit: () => _showEditCommitmentSheet(context, commitment),
             onToggle: () => provider.toggleCommitmentStatus(commitment.id),
             onDelete: () => provider.deleteCommitment(commitment.id),
           );
@@ -229,5 +253,36 @@ class CommitmentsScreen extends StatelessWidget {
         ),
       );
     }
+  }
+
+  PopupMenuItem<CommitmentSortType> _buildSortMenuItem(
+    String title,
+    CommitmentSortType type,
+    CommitmentSortType currentType,
+  ) {
+    final isSelected = type == currentType;
+    return PopupMenuItem<CommitmentSortType>(
+      value: type,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+              fontSize: 16,
+            ),
+          ),
+          if (isSelected) ...[
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.check,
+              color: AppColors.textPrimary,
+              size: 18,
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
