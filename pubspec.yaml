@@ -1,0 +1,32 @@
+name: salary_calculator
+description: "حاسبة الراتب السعودية - تطبيق لحساب الراتب مع خصومات التأمينات الاجتماعية (GOSI)"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management - إدارة الحالة
+  provider: ^6.1.2
+
+  # Local Storage - التخزين المحلي
+  shared_preferences: ^2.2.3
+
+  # Number Formatting - تنسيق الأرقام
+  intl: ^0.19.0
+
+  # iOS Style Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
