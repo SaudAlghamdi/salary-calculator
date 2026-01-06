@@ -114,6 +114,38 @@ class ArabicStrings {
   static const String sortOldest = 'الأقدم';
   static const String sortPriceHighest = 'السعر (الأعلى)';
   static const String sortPriceLowest = 'السعر (الأدنى)';
+
+  // المواعيد - Appointments
+  static const String remainingUntil = 'المتبقي على';
+  static const String salary = 'الراتب';
+  static const String privatePension = 'الراتب التقاعدي (الخاص)';
+  static const String publicPension = 'الراتب التقاعدي (العام)';
+  static const String days = 'يوم';
+  static const String share = 'مشاركة';
+  static const String editSalaryDay = 'تعديل يوم الراتب';
+  static const String editSalaryDayHint = 'يمكنك تعديل يوم الراتب عن طريق سحب الموعد إلى اليسار.';
+  static const String editDayNote = 'سيتم تعديل اليوم في صفحة المواعيد وفي الـWidget خارج التطبيق';
+
+  // الإعدادات - Settings (Extended)
+  static const String supportApp = 'ادعم التطبيق';
+  static const String allowances = 'البدلات';
+  static const String customizeAllowances = 'تخصيص البدلات';
+  static const String inputs = 'المدخلات';
+  static const String customizeInputs = 'تخصيص المدخلات';
+  static const String gradualIncrease = 'الزيادة التدريجية لنسب الإشتراك';
+  static const String gradualIncreaseInsurance = 'الزيادة التدريجية لنسبة إشتراك التأمينات';
+  static const String contactUs = 'تواصل معنا';
+  static const String twitter = 'تويتر';
+  static const String email = 'البريد الإلكتروني';
+  static const String shareApp = 'شارك التطبيق مع أصدقائك';
+  static const String usefulLinks = 'روابط تُهمك';
+  static const String gosiGuide = 'الدليل الإرشادي لأنظمة التأمينات الاجتماعية';
+
+  // تخصيص البدلات - Customize Allowances
+  static const String value = 'القيمة';
+  static const String percentage = 'النسبة المؤية';
+  static const String addAllowanceHint = 'اضغط على أيقونة الإضافة (+) لإضافة بدل جديد.';
+  static const String swipeToDeleteHint = 'اسحب البدل إلى اليسار لحذفه.';
 }
 
 /// مفاتيح التخزين المحلي
