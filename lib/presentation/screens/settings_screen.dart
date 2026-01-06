@@ -1,20 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants.dart';
 import '../../core/theme.dart';
-import '../providers/salary_provider.dart';
+import 'customize_allowances_screen.dart';
 
 /// شاشة الإعدادات - Settings Screen
 ///
 /// تتيح للمستخدم تخصيص:
-/// - نسبة بدل السكن
-/// - نسبة بدل المواصلات
+/// - البدلات
+/// - المدخلات
+/// - التواصل والمشاركة
 
-
-/// شاشة الإعدادات
-/// Settings Screen
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -26,209 +24,526 @@ class SettingsScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Consumer<SalaryProvider>(
-          builder: (context, provider, _) {
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const SizedBox(height: 16),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const SizedBox(height: 16),
 
-                  // عنوان قسم البدلات
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+              // زر دعم التطبيق
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // TODO: Implement support/donation
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    child: Text(
-                      ArabicStrings.allowancesSettings,
-                      style: AppTextStyles.sectionTitle,
-                    ),
-                  ),
-
-                  // بطاقة إعدادات البدلات
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBackground,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // نسبة بدل السكن
-                        _AllowanceSettingRow(
-                          label: ArabicStrings.housingAllowancePercentage,
-                          percentage: provider.housingAllowancePercentage,
-                          onChanged:
-                              provider.updateHousingAllowancePercentage,
-                        ),
-
-                        Divider(
-                          height: 0.5,
-                          color: AppColors.borderColor.withOpacity(0.3),
-                        ),
-
-                        // نسبة بدل المواصلات
-                        _AllowanceSettingRow(
-                          label:
-                              ArabicStrings.transportationAllowancePercentage,
-                          percentage:
-                              provider.transportationAllowancePercentage,
-                          onChanged:
-                              provider.updateTransportationAllowancePercentage,
-                          showBorder: false,
+                        const Icon(Icons.favorite, color: Colors.white70),
+                        const SizedBox(width: 8),
+                        Text(
+                          ArabicStrings.supportApp,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 32),
-
-                  // معلومات عن التأمينات الاجتماعية
-                  _GosiInfoCard(),
-
-                  const SizedBox(height: 24),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-/// صف إعداد نسبة البدل
-/// Allowance Setting Row
-class _AllowanceSettingRow extends StatelessWidget {
-  final String label;
-  final double percentage;
-  final ValueChanged<double> onChanged;
-  final bool showBorder;
-
-  const _AllowanceSettingRow({
-    required this.label,
-    required this.percentage,
-    required this.onChanged,
-    this.showBorder = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => _showPercentagePicker(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // النسبة على اليسار
-            Text(
-              '${(percentage * 100).toInt()}%',
-              style: AppTextStyles.normalValue,
-            ),
-            // العنوان على اليمين
-            Text(
-              label,
-              style: AppTextStyles.label,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showPercentagePicker(BuildContext context) {
-    final percentages = List.generate(51, (i) => i / 100); // 0% to 50%
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.cardBackground,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => SizedBox(
-        height: 250,
-        child: Column(
-          children: [
-            // عنوان
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                label,
-                style: AppTextStyles.sectionTitle,
-              ),
-            ),
-
-            // المنتقي
-            Expanded(
-              child: CupertinoPicker(
-                itemExtent: 40,
-                scrollController: FixedExtentScrollController(
-                  initialItem:
-                      percentages.indexOf(percentage).clamp(0, percentages.length - 1),
                 ),
-                onSelectedItemChanged: (index) {
-                  onChanged(percentages[index]);
-                },
-                children: percentages.map((p) {
-                  return Center(
-                    child: Text(
-                      '${(p * 100).toInt()}%',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                      ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // قسم البدلات
+              _buildSectionHeader(ArabicStrings.allowances),
+              _buildNavigationItem(
+                context,
+                title: ArabicStrings.customizeAllowances,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CustomizeAllowancesScreen(),
                     ),
                   );
-                }).toList(),
+                },
               ),
-            ),
-          ],
+
+              const SizedBox(height: 16),
+
+              // قسم المدخلات
+              _buildSectionHeader(ArabicStrings.inputs),
+              _buildNavigationItem(
+                context,
+                title: ArabicStrings.customizeInputs,
+                onTap: () => _showCustomizeInputsSheet(context),
+              ),
+
+              const SizedBox(height: 16),
+
+              // قسم الزيادة التدريجية
+              _buildSectionHeader(ArabicStrings.gradualIncrease),
+              _buildNavigationItem(
+                context,
+                title: ArabicStrings.gradualIncreaseInsurance,
+                onTap: () {
+                  // TODO: Implement gradual increase screen
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // قسم التواصل
+              _buildSectionHeader(ArabicStrings.contactUs),
+              _buildContactCard(context),
+
+              const SizedBox(height: 16),
+
+              // زر مشاركة التطبيق
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: InkWell(
+                  onTap: () {
+                    Share.share(
+                      'حاسبة الراتب السعودية - حمل التطبيق الآن!',
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardBackground,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          ArabicStrings.shareApp,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.ios_share,
+                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // قسم الروابط المهمة
+              _buildSectionHeader(ArabicStrings.usefulLinks),
+              _buildNavigationItem(
+                context,
+                title: ArabicStrings.gosiGuide,
+                onTap: () {
+                  // TODO: Open GOSI guide link
+                },
+              ),
+
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-/// بطاقة معلومات التأمينات الاجتماعية
-/// GOSI Info Card
-class _GosiInfoCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        title,
+        style: AppTextStyles.sectionTitle,
+      ),
+    );
+  }
+
+  Widget _buildNavigationItem(
+    BuildContext context, {
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Icon(
+                Icons.chevron_left,
+                color: AppColors.textSecondary,
+              ),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(
-            'معلومات التأمينات الاجتماعية',
-            style: AppTextStyles.sectionTitle,
+          // تويتر
+          InkWell(
+            onTap: () {
+              // TODO: Open Twitter
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Icon(
+                    Icons.flutter_dash, // Twitter icon placeholder
+                    color: Colors.blue,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        ArabicStrings.twitter,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Text(
+                        '@7asebatALRateb',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            'نسبة خصم التأمينات من الموظف: ${(GosiConstants.employeeContributionRate * 100).toStringAsFixed(2)}%',
-            style: AppTextStyles.label,
-            textAlign: TextAlign.right,
+
+          Divider(
+            height: 0.5,
+            color: AppColors.borderColor.withOpacity(0.3),
+            indent: 16,
+            endIndent: 16,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'الحد الأقصى للراتب الخاضع للتأمينات: ${GosiConstants.maxInsurableSalary.toInt()} ريال',
-            style: AppTextStyles.label,
-            textAlign: TextAlign.right,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'يتم احتساب خصم التأمينات على (الراتب الأساسي + بدل السكن)',
-            style: AppTextStyles.secondaryLabel,
-            textAlign: TextAlign.right,
+
+          // البريد الإلكتروني
+          InkWell(
+            onTap: () {
+              // TODO: Open email
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Icon(
+                    Icons.alternate_email,
+                    color: Colors.blue,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        ArabicStrings.email,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Text(
+                        'YazeedALZahraniApps@gmail.com',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showCustomizeInputsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _CustomizeInputsSheet(),
+    );
+  }
+}
+
+/// ورقة تخصيص المدخلات
+class _CustomizeInputsSheet extends StatefulWidget {
+  const _CustomizeInputsSheet();
+
+  @override
+  State<_CustomizeInputsSheet> createState() => _CustomizeInputsSheetState();
+}
+
+class _CustomizeInputsSheetState extends State<_CustomizeInputsSheet> {
+  bool _saveInputs = false;
+  bool _showCommitments = true;
+  bool _showAnnualBonus = true;
+  final TextEditingController _dollarRateController = TextEditingController(text: '3.75');
+
+  @override
+  void dispose() {
+    _dollarRateController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // الهيدر
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      ArabicStrings.save,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    ArabicStrings.customizeInputs,
+                    style: AppTextStyles.sectionTitle,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // حفظ المدخلات
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.inputBackground,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoSwitch(
+                    value: _saveInputs,
+                    onChanged: (value) {
+                      setState(() {
+                        _saveInputs = value;
+                      });
+                    },
+                    activeColor: AppColors.textGreen,
+                  ),
+                  Text(
+                    ArabicStrings.saveInputs,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // قسم إظهار
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                ArabicStrings.show,
+                style: AppTextStyles.sectionTitle,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.inputBackground,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  // الإلتزامات المالية
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CupertinoSwitch(
+                          value: _showCommitments,
+                          onChanged: (value) {
+                            setState(() {
+                              _showCommitments = value;
+                            });
+                          },
+                          activeColor: AppColors.textGreen,
+                        ),
+                        Text(
+                          ArabicStrings.financialCommitments,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Divider(
+                    height: 0.5,
+                    color: AppColors.borderColor.withOpacity(0.3),
+                  ),
+
+                  // البونص السنوي
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CupertinoSwitch(
+                          value: _showAnnualBonus,
+                          onChanged: (value) {
+                            setState(() {
+                              _showAnnualBonus = value;
+                            });
+                          },
+                          activeColor: AppColors.textGreen,
+                        ),
+                        Text(
+                          ArabicStrings.annualBonus,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // سعر صرف الدولار
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                ArabicStrings.dollarExchangeRate,
+                style: AppTextStyles.sectionTitle,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.inputBackground,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextField(
+                controller: _dollarRateController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                ),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                '1 دولار = ${_dollarRateController.text} ريال',
+                style: AppTextStyles.secondaryLabel,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

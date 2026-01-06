@@ -23,6 +23,9 @@ dependencies:
   # iOS Style Icons
   cupertino_icons: ^1.0.8
 
+  # Share functionality - المشاركة
+  share_plus: ^7.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

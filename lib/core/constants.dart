@@ -130,7 +130,6 @@ class ArabicStrings {
   static const String supportApp = 'ادعم التطبيق';
   static const String allowances = 'البدلات';
   static const String customizeAllowances = 'تخصيص البدلات';
-  static const String inputs = 'المدخلات';
   static const String customizeInputs = 'تخصيص المدخلات';
   static const String gradualIncrease = 'الزيادة التدريجية لنسب الإشتراك';
   static const String gradualIncreaseInsurance = 'الزيادة التدريجية لنسبة إشتراك التأمينات';
@@ -146,6 +145,28 @@ class ArabicStrings {
   static const String percentage = 'النسبة المؤية';
   static const String addAllowanceHint = 'اضغط على أيقونة الإضافة (+) لإضافة بدل جديد.';
   static const String swipeToDeleteHint = 'اسحب البدل إلى اليسار لحذفه.';
+  static const String chooseAllowanceType = 'اختر نوع البدل الذي ترغب في إضافته:';
+  static const String customName = 'اسم مخصص';
+
+  // أنواع البدلات - Allowance Types
+  static const String workNatureAllowance = 'بدل طبيعة العمل';
+  static const String costOfLivingAllowance = 'بدل غلاء المعيشة';
+  static const String communicationAllowance = 'بدل اتصال';
+  static const String phoneAllowance = 'بدل هاتف';
+  static const String riskAllowance = 'بدل الخطورة';
+  static const String secondmentAllowance = 'بدل انتداب';
+  static const String infectionAllowance = 'بدل عدوى';
+  static const String computerAllowance = 'بدل حاسب آلي';
+  static const String appearanceAllowance = 'بدل مظهر';
+  static const String travelAllowance = 'بدل السفر';
+  static const String tripsAllowance = 'بدل الرحلات';
+  static const String foodAllowance = 'بدل الطعام';
+
+  // تخصيص المدخلات - Customize Inputs
+  static const String saveInputs = 'حفظ المدخلات';
+  static const String show = 'إظهار';
+  static const String dollarExchangeRate = 'سعر صرف الدولار \$';
+  static const String dollarEqualsRiyal = '1 دولار = {rate} ريال';
 }
 
 /// مفاتيح التخزين المحلي
@@ -160,4 +181,12 @@ class StorageKeys {
   static const String lastBonusSalaries = 'last_bonus_salaries';
   static const String inputMode = 'input_mode';
   static const String commitments = 'commitments';
+  static const String customAllowances = 'custom_allowances';
+  static const String salaryDay = 'salary_day';
+  static const String privatePensionDay = 'private_pension_day';
+  static const String publicPensionDay = 'public_pension_day';
+  static const String saveInputsEnabled = 'save_inputs_enabled';
+  static const String showCommitments = 'show_commitments';
+  static const String showAnnualBonus = 'show_annual_bonus';
+  static const String dollarRate = 'dollar_rate';
 }
