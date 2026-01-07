@@ -3,29 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants.dart';
 import '../../core/theme.dart';
-import '../providers/salary_provider.dart';
+import '../providers/allowances_provider.dart';
 import '../widgets/segmented_control.dart';
-
-/// أنواع البدلات المتاحة
-enum AllowanceType {
-  housing(ArabicStrings.housingAllowance),
-  transportation(ArabicStrings.transportationAllowance),
-  workNature(ArabicStrings.workNatureAllowance),
-  costOfLiving(ArabicStrings.costOfLivingAllowance),
-  communication(ArabicStrings.communicationAllowance),
-  phone(ArabicStrings.phoneAllowance),
-  risk(ArabicStrings.riskAllowance),
-  secondment(ArabicStrings.secondmentAllowance),
-  infection(ArabicStrings.infectionAllowance),
-  computer(ArabicStrings.computerAllowance),
-  appearance(ArabicStrings.appearanceAllowance),
-  travel(ArabicStrings.travelAllowance),
-  trips(ArabicStrings.tripsAllowance),
-  food(ArabicStrings.foodAllowance);
-
-  final String label;
-  const AllowanceType(this.label);
-}
 
 /// شاشة تخصيص البدلات - Customize Allowances Screen
 class CustomizeAllowancesScreen extends StatelessWidget {
@@ -48,8 +27,10 @@ class CustomizeAllowancesScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<SalaryProvider>(
+      body: Consumer<AllowancesProvider>(
         builder: (context, provider, _) {
+          final allowances = provider.allowances;
+
           return SafeArea(
             child: SingleChildScrollView(
               child: Column(
@@ -57,25 +38,24 @@ class CustomizeAllowancesScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 16),
 
-                  // بدل السكن
-                  _AllowanceCard(
-                    title: ArabicStrings.housingAllowance,
-                    percentage: provider.housingAllowancePercentage,
-                    onPercentageChanged: provider.updateHousingAllowancePercentage,
-                    isDeletable: false,
-                  ),
+                  // قائمة البدلات
+                  ...allowances.map((allowance) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _AllowanceCard(
+                      allowance: allowance,
+                      onValueChanged: (value) {
+                        provider.updateAllowanceValue(allowance.id, value);
+                      },
+                      onTypeChanged: (isPercentage) {
+                        provider.updateAllowanceType(allowance.id, isPercentage);
+                      },
+                      onDelete: allowance.isDefault
+                          ? null
+                          : () => provider.deleteAllowance(allowance.id),
+                    ),
+                  )),
 
-                  const SizedBox(height: 16),
-
-                  // بدل المواصلات
-                  _AllowanceCard(
-                    title: ArabicStrings.transportationAllowance,
-                    percentage: provider.transportationAllowancePercentage,
-                    onPercentageChanged: provider.updateTransportationAllowancePercentage,
-                    isDeletable: false,
-                  ),
-
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
 
                   // ملاحظات
                   Padding(
@@ -122,17 +102,15 @@ class CustomizeAllowancesScreen extends StatelessWidget {
 
 /// بطاقة البدل
 class _AllowanceCard extends StatefulWidget {
-  final String title;
-  final double percentage;
-  final ValueChanged<double> onPercentageChanged;
-  final bool isDeletable;
+  final Allowance allowance;
+  final ValueChanged<double> onValueChanged;
+  final ValueChanged<bool> onTypeChanged;
   final VoidCallback? onDelete;
 
   const _AllowanceCard({
-    required this.title,
-    required this.percentage,
-    required this.onPercentageChanged,
-    this.isDeletable = true,
+    required this.allowance,
+    required this.onValueChanged,
+    required this.onTypeChanged,
     this.onDelete,
   });
 
@@ -145,7 +123,7 @@ class _AllowanceCardState extends State<_AllowanceCard>
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   bool _isRevealed = false;
-  bool _showPercentage = true; // true = percentage, false = value
+  late TextEditingController _valueController;
 
   @override
   void initState() {
@@ -161,16 +139,35 @@ class _AllowanceCardState extends State<_AllowanceCard>
       parent: _controller,
       curve: Curves.easeOut,
     ));
+
+    _initValueController();
+  }
+
+  void _initValueController() {
+    final displayValue = widget.allowance.isPercentage
+        ? (widget.allowance.value * 100).toStringAsFixed(2)
+        : widget.allowance.value.toStringAsFixed(2);
+    _valueController = TextEditingController(text: displayValue);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AllowanceCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.allowance.value != widget.allowance.value ||
+        oldWidget.allowance.isPercentage != widget.allowance.isPercentage) {
+      _initValueController();
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _valueController.dispose();
     super.dispose();
   }
 
   void _toggleReveal() {
-    if (!widget.isDeletable) return;
+    if (widget.onDelete == null) return;
     setState(() {
       _isRevealed = !_isRevealed;
       if (_isRevealed) {
@@ -181,8 +178,18 @@ class _AllowanceCardState extends State<_AllowanceCard>
     });
   }
 
+  void _onValueSubmitted(String text) {
+    final parsed = double.tryParse(text);
+    if (parsed != null) {
+      final value = widget.allowance.isPercentage ? parsed / 100 : parsed;
+      widget.onValueChanged(value);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDeletable = widget.onDelete != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -190,7 +197,7 @@ class _AllowanceCardState extends State<_AllowanceCard>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            widget.title,
+            widget.allowance.name,
             style: AppTextStyles.sectionTitle,
           ),
         ),
@@ -199,7 +206,7 @@ class _AllowanceCardState extends State<_AllowanceCard>
 
         // بطاقة البدل
         GestureDetector(
-          onHorizontalDragEnd: widget.isDeletable
+          onHorizontalDragEnd: isDeletable
               ? (details) {
                   if (details.primaryVelocity != null) {
                     if (details.primaryVelocity! < -200) {
@@ -215,7 +222,7 @@ class _AllowanceCardState extends State<_AllowanceCard>
             child: Stack(
               children: [
                 // زر الحذف
-                if (widget.isDeletable)
+                if (isDeletable)
                   Positioned.fill(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -275,16 +282,14 @@ class _AllowanceCardState extends State<_AllowanceCard>
                           child: SegmentedControl(
                             firstOption: ArabicStrings.value,
                             secondOption: ArabicStrings.percentage,
-                            selectedIndex: _showPercentage ? 1 : 0,
+                            selectedIndex: widget.allowance.isPercentage ? 1 : 0,
                             onChanged: (index) {
-                              setState(() {
-                                _showPercentage = index == 1;
-                              });
+                              widget.onTypeChanged(index == 1);
                             },
                           ),
                         ),
 
-                        // صف البدل
+                        // صف البدل مع إمكانية التعديل
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -293,19 +298,46 @@ class _AllowanceCardState extends State<_AllowanceCard>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // القيمة أو النسبة
-                              Text(
-                                _showPercentage
-                                    ? '${(widget.percentage * 100).toStringAsFixed(2)} %'
-                                    : '0.00 ${ArabicStrings.sar}',
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 16,
+                              // حقل القيمة
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 100,
+                                      child: TextField(
+                                        controller: _valueController,
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        textAlign: TextAlign.left,
+                                        style: const TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 16,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          border: InputBorder.none,
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                        onSubmitted: _onValueSubmitted,
+                                        onEditingComplete: () {
+                                          _onValueSubmitted(_valueController.text);
+                                        },
+                                      ),
+                                    ),
+                                    Text(
+                                      widget.allowance.isPercentage
+                                          ? ' %'
+                                          : ' ${ArabicStrings.sar}',
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               // اسم البدل
                               Text(
-                                widget.title,
+                                widget.allowance.name,
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
                                   fontSize: 16,
@@ -388,7 +420,11 @@ class _AddAllowanceSheet extends StatelessWidget {
                 return InkWell(
                   onTap: () {
                     Navigator.pop(context);
-                    // TODO: Add allowance logic
+                    if (isCustom) {
+                      _showCustomNameDialog(context);
+                    } else {
+                      _addAllowance(context, type);
+                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -405,6 +441,68 @@ class _AddAllowanceSheet extends StatelessWidget {
                   ),
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addAllowance(BuildContext context, String name) {
+    final provider = Provider.of<AllowancesProvider>(context, listen: false);
+    provider.addAllowance(name: name);
+  }
+
+  void _showCustomNameDialog(BuildContext context) {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        title: Text(
+          ArabicStrings.customName,
+          style: AppTextStyles.sectionTitle,
+          textAlign: TextAlign.right,
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textAlign: TextAlign.right,
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: InputDecoration(
+            hintText: ArabicStrings.enterAllowanceName,
+            hintStyle: AppTextStyles.secondaryLabel,
+            filled: true,
+            fillColor: AppColors.inputBackground,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              ArabicStrings.cancel,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                final provider = Provider.of<AllowancesProvider>(
+                  context,
+                  listen: false,
+                );
+                provider.addAllowance(name: controller.text.trim());
+                Navigator.pop(dialogContext);
+              }
+            },
+            child: Text(
+              ArabicStrings.add,
+              style: const TextStyle(color: Colors.blue),
             ),
           ),
         ],

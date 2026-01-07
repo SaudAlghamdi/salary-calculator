@@ -167,6 +167,11 @@ class ArabicStrings {
   static const String show = 'إظهار';
   static const String dollarExchangeRate = 'سعر صرف الدولار \$';
   static const String dollarEqualsRiyal = '1 دولار = {rate} ريال';
+
+  // إضافة بدل مخصص - Add Custom Allowance
+  static const String enterAllowanceName = 'ادخل اسم البدل';
+  static const String cancel = 'إلغاء';
+  static const String add = 'إضافة';
 }
 
 /// مفاتيح التخزين المحلي

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme.dart';
 import 'domain/repositories/settings_repository.dart';
 import 'domain/services/gosi_calculator_service.dart';
+import 'presentation/providers/allowances_provider.dart';
 import 'presentation/providers/appointments_provider.dart';
 import 'presentation/providers/commitments_provider.dart';
 import 'presentation/providers/salary_provider.dart';
@@ -88,6 +89,10 @@ class SalaryCalculatorApp extends StatelessWidget {
         // مزود حالة المواعيد
         ChangeNotifierProvider(
           create: (_) => AppointmentsProvider(prefs),
+        ),
+        // مزود حالة البدلات
+        ChangeNotifierProvider(
+          create: (_) => AllowancesProvider(prefs),
         ),
       ],
       child: MaterialApp(
